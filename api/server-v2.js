@@ -50,6 +50,120 @@ const TAROT_DECK = [
   { id: 'world',       name: 'Мир',                mood: '🌍 Завершение', shortMeaning: 'Цикл завершён, интеграция, успех',            advice: 'Ты пришёл к целостности — отпразднуй это',    image: '21_world' },
 ];
 
+// ─── NUMEROLOGY ───────────────────────────────────────────────────────────────
+const NUMBERS = [
+  { value: 1,  name: 'Единица',   energy: 'начало, импульс, исток',           form: 'всё начинается с нуля — первый шаг, первый сигнал, первый выбор' },
+  { value: 2,  name: 'Двойка',    energy: 'дуальность, ожидание, выбор',      form: 'энергия раздвоена — два пути, два голоса, две стороны одного' },
+  { value: 3,  name: 'Тройка',    energy: 'рост, творчество, выражение',      form: 'энергия ищет выход — через слово, идею, творческий акт' },
+  { value: 4,  name: 'Четвёрка',  energy: 'структура, стабильность, фундамент', form: 'энергия хочет оформиться — осесть, закрепиться, стать реальной' },
+  { value: 5,  name: 'Пятёрка',   energy: 'движение, перемена, вызов',        form: 'энергия не стоит на месте — она расшатывает, ломает, ведёт вперёд' },
+  { value: 6,  name: 'Шестёрка',  energy: 'гармония, забота, ответственность', form: 'энергия ищет баланса — между собой и другими, между давать и брать' },
+  { value: 7,  name: 'Семёрка',   energy: 'поиск, мистика, углубление',       form: 'энергия уходит внутрь — в вопросы без очевидных ответов' },
+  { value: 8,  name: 'Восьмёрка', energy: 'сила, давление, напряжение',       form: 'энергия давит и требует — она не терпит слабости или промедления' },
+  { value: 9,  name: 'Девятка',   energy: 'завершение, мудрость, отпускание', form: 'энергия подводит итог — цикл почти замкнулся, пора отпустить' },
+  { value: 11, name: 'Одиннадцать', energy: 'интуиция, озарение, сверхчувственность', form: 'энергия приходит вспышками — как знак, как сон, как внутренний голос' },
+  { value: 22, name: 'Двадцать два', energy: 'мастерство, большой план, воплощение', form: 'энергия строит — не мелкое, а настоящее, долгосрочное, масштабное' },
+];
+
+// ─── COLORS ───────────────────────────────────────────────────────────────────
+// Named color palette with meanings for richer interpretations
+const COLOR_MEANINGS = {
+  red:    { keywords: ['страсть, огонь, решительность'], tone: 'горячий и настойчивый' },
+  orange: { keywords: ['вдохновение, азарт, энергия'], tone: 'живой и воодушевляющий' },
+  yellow: { keywords: ['ясность, свет, оптимизм'], tone: 'яркий и открытый' },
+  green:  { keywords: ['рост, исцеление, природа'], tone: 'мягкий и восстанавливающий' },
+  teal:   { keywords: ['равновесие, ясность, мудрость'], tone: 'спокойный и ясный' },
+  blue:   { keywords: ['глубина, серьёзность, внутренняя работа'], tone: 'глубокий и сосредоточенный' },
+  indigo: { keywords: ['интуиция, мистика, тайное знание'], tone: 'таинственный и проникновенный' },
+  violet: { keywords: ['трансформация, духовность, поиск'], tone: 'возвышенный и ищущий' },
+  pink:   { keywords: ['нежность, симпатия, уязвимость'], tone: 'мягкий и эмоциональный' },
+  rose:   { keywords: ['любовь, тепло, открытость сердца'], tone: 'тёплый и сердечный' },
+  gold:   { keywords: ['ценность, свет, значимость момента'], tone: 'торжественный и значимый' },
+  silver: { keywords: ['интуиция, луна, отражение'], tone: 'лунный и переменчивый' },
+  white:  { keywords: ['чистота, начало, пустота до формы'], tone: 'чистый и незаполненный' },
+  black:  { keywords: ['глубина, тень, то что скрыто'], tone: 'тёмный и требующий внимания' },
+  brown:  { keywords: ['земля, практичность, укоренённость'], tone: 'земной и практичный' },
+};
+
+function randomColor() {
+  // Generate fully random RGB hex
+  const r = Math.floor(Math.random() * 256);
+  const g = Math.floor(Math.random() * 256);
+  const b = Math.floor(Math.random() * 256);
+  const hex = '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase();
+
+  // Classify color for meaning
+  const meaning = classifyColor(r, g, b);
+  return { hex, r, g, b, ...meaning };
+}
+
+function classifyColor(r, g, b) {
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const lightness = (max + min) / 2 / 255;
+  const saturation = max === min ? 0 : (max - min) / (255 - Math.abs(max + min - 255));
+
+  if (lightness > 0.85) return { name: 'white', ...COLOR_MEANINGS.white };
+  if (lightness < 0.15) return { name: 'black', ...COLOR_MEANINGS.black };
+  if (saturation < 0.15) return lightness > 0.5 ? { name: 'silver', ...COLOR_MEANINGS.silver } : { name: 'brown', ...COLOR_MEANINGS.brown };
+
+  // Hue detection
+  const hue = rgbToHue(r, g, b);
+  if (hue < 15 || hue >= 345)  return { name: 'red', ...COLOR_MEANINGS.red };
+  if (hue < 40)                return { name: 'orange', ...COLOR_MEANINGS.orange };
+  if (hue < 65)                return { name: 'yellow', ...COLOR_MEANINGS.yellow };
+  if (hue < 150)               return { name: 'green', ...COLOR_MEANINGS.green };
+  if (hue < 185)               return { name: 'teal', ...COLOR_MEANINGS.teal };
+  if (hue < 220)               return lightness < 0.35 ? { name: 'indigo', ...COLOR_MEANINGS.indigo } : { name: 'blue', ...COLOR_MEANINGS.blue };
+  if (hue < 260)               return { name: 'violet', ...COLOR_MEANINGS.violet };
+  if (hue < 290)               return { name: 'violet', ...COLOR_MEANINGS.violet };
+  if (hue < 320)               return lightness > 0.55 ? { name: 'pink', ...COLOR_MEANINGS.pink } : { name: 'rose', ...COLOR_MEANINGS.rose };
+  if (hue < 345)               return { name: 'rose', ...COLOR_MEANINGS.rose };
+  return { name: 'red', ...COLOR_MEANINGS.red };
+}
+
+function rgbToHue(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0;
+  if (max !== min) {
+    const d = max - min;
+    if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+    else if (max === g) h = ((b - r) / d + 2) / 6;
+    else h = ((r - g) / d + 4) / 6;
+  }
+  return Math.round(h * 360);
+}
+
+function randomNumber() {
+  return NUMBERS[Math.floor(Math.random() * NUMBERS.length)];
+}
+
+// ─── READING GENERATOR ────────────────────────────────────────────────────────
+function generateReading(number, card, color) {
+  const parts = [
+    `${number.name} — это ${number.energy}. ${number.form}.`,
+    `${card.name} — ${card.shortMeaning.toLowerCase()}.`,
+    `${color.tone.charAt(0).toUpperCase() + color.tone.slice(1)} цвет ${color.hex} говорит: всё это проходит через ${color.keywords[0]}.`,
+  ];
+
+  // Synthesis
+  const synthesis = buildSynthesis(number, card, color);
+  parts.push(synthesis);
+
+  return parts.join(' ');
+}
+
+function buildSynthesis(number, card, color) {
+  // A few synthesis templates to vary the output
+  const templates = [
+    `Значит, прямо сейчас в твоей жизни ${card.advice.toLowerCase()} — и это окрашено в ${color.tone} тон.`,
+    `Совет карт: ${card.advice.toLowerCase()}. ${number.name} подтверждает: момент пришёл.`,
+    `${number.name} задаёт ритм, ${card.name} — тему, а ${color.hex} — эмоциональный фон. Вместе они говорят: ${card.advice.toLowerCase()}.`,
+  ];
+  return templates[Math.floor(Math.random() * templates.length)];
+}
+
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 function verifyTwitchJWT(token) {
   // In production: verify against Twitch Extension secret
@@ -114,13 +228,21 @@ app.post('/api/draw', authMiddleware, (req, res) => {
     return res.status(429).json({ error: 'cooldown', remaining });
   }
 
-  const card = drawRandomCard();
+  // Three independent rolls
+  const number = randomNumber();
+  const card   = drawRandomCard();
+  const color  = randomColor();
+  const reading = generateReading(number, card, color);
+
   const event = {
     id: crypto.randomUUID(),
     type: 'draw',
     userId,
     channelId,
+    number,
     card,
+    color,
+    reading,
     timestamp: now,
     status: 'new',
   };
@@ -131,7 +253,7 @@ app.post('/api/draw', authMiddleware, (req, res) => {
   // Notify dashboard
   broadcastToChannel(channelId, { type: 'new_event', event });
 
-  res.json({ card, eventId: event.id });
+  res.json({ number, card, color, reading, eventId: event.id });
 });
 
 // Submit question

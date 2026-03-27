@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✨ Таро Оверлей</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --indigo:    #1a0a2e;
+    --plum:      #2d1057;
+    --gold:      #d4af37;
+    --gold-light:#f0d060;
+    --rose:      #e8a0bf;
+    --sky:       #a0c8e8;
+    --glow:      rgba(212, 175, 55, 0.35);
+    --glass:     rgba(14, 6, 26, 0.86);
+    --font-deco: 'Cinzel Decorative', serif;
+    --font-body: 'Cormorant Garamond', serif;
+  }
+
+  html, body { width:100%; height:100%; background:transparent; overflow:hidden; font-family:var(--font-body); }
+
+  /* ── WIDGET ── */
+  #widget {
+    position: fixed; bottom: 24px; right: 24px;
+    z-index: 9999; display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+  }
+
+  #compact-btn {
+    display: flex; align-items: center; gap: 8px; padding: 10px 18px;
+    background: var(--glass); border: 1px solid rgba(212,175,55,0.5); border-radius: 40px;
+    cursor: pointer; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    transition: all 0.3s ease;
+    box-shadow: 0 0 20px var(--glow), inset 0 1px 0 rgba(255,255,255,0.07);
+    color: var(--gold); font-family: var(--font-deco); font-size: 11px; letter-spacing: 0.05em; white-space: nowrap;
+  }
+  #compact-btn:hover {
+    border-color: var(--gold);
+    box-shadow: 0 0 32px var(--glow), 0 0 64px rgba(212,175,55,0.15);
+    transform: translateY(-2px);
+  }
+  .orb { font-size: 18px; filter: drop-shadow(0 0 6px var(--gold)); animation: orb-pulse 3s ease-in-out infinite; }
+  @keyframes orb-pulse {
+    0%,100% { filter: drop-shadow(0 0 6px var(--gold)); transform: scale(1); }
+    50%      { filter: drop-shadow(0 0 14px var(--gold-light)); transform: scale(1.12); }
+  }
+
+  #panel {
+    display: none; flex-direction: column; gap: 10px; padding: 18px 16px; width: 256px;
+    background: var(--glass); border: 1px solid rgba(212,175,55,0.32); border-radius: 16px;
+    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    box-shadow: 0 0 40px var(--glow), 0 16px 48px rgba(0,0,0,0.6);
+    animation: panel-in 0.4s cubic-bezier(0.34,1.56,0.64,1); position: relative; overflow: hidden;
+  }
+  #panel.visible { display: flex; }
+  #panel::before {
+    content:''; position:absolute; inset:0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(212,175,55,0.06), transparent 65%);
+    pointer-events: none;
+  }
+  @keyframes panel-in {
+    from { opacity:0; transform:translateY(14px) scale(0.95); }
+    to   { opacity:1; transform:translateY(0) scale(1); }
+  }
+
+  .panel-title { font-family:var(--font-deco); font-size:10px; letter-spacing:0.18em; color:var(--gold); text-align:center; }
+  .divider { height:1px; background: linear-gradient(90deg,transparent,rgba(212,175,55,0.3),transparent); }
+
+  .btn-action {
+    display:flex; align-items:center; justify-content:center; gap:8px; padding:12px 14px;
+    border-radius:10px; border:1px solid rgba(212,175,55,0.32);
+    background: rgba(74,26,138,0.22); color: var(--gold-light);
+    font-family:var(--font-deco); font-size:9.5px; letter-spacing:0.08em;
+    cursor:pointer; transition:all 0.25s ease; position:relative; overflow:hidden;
+  }
+  .btn-action::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,0.04),transparent); }
+  .btn-action:hover:not(:disabled) { border-color:var(--gold); background:rgba(74,26,138,0.48); box-shadow:0 0 18px var(--glow); transform:translateY(-1px); }
+  .btn-action:disabled { opacity:0.4; cursor:not-allowed; }
+  .btn-action .icon { font-size:15px; }
+
+  #cooldown-text { font-family:var(--font-body); font-size:11px; font-style:italic; color:rgba(212,175,55,0.5); text-align:center; }
+
+  #question-form { display:none; flex-direction:column; gap:8px; }
+  #question-form.visible { display:flex; }
+  #question-input {
+    background: rgba(14,6,26,0.7); border:1px solid rgba(212,175,55,0.28); border-radius:8px;
+    padding:10px 12px; color:#e0d0f0; font-family:var(--font-body); font-size:13px;
+    resize:none; height:64px; outline:none; transition:border-color 0.2s;
+  }
+  #question-input::placeholder { color:rgba(212,175,55,0.28); font-style:italic; }
+  #question-input:focus { border-color:rgba(212,175,55,0.58); }
+  .btn-send {
+    padding:9px; background:linear-gradient(135deg,rgba(212,175,55,0.18),rgba(212,175,55,0.07));
+    border:1px solid rgba(212,175,55,0.42); border-radius:8px; color:var(--gold);
+    font-family:var(--font-deco); font-size:9px; letter-spacing:0.1em; cursor:pointer; transition:all 0.2s;
+  }
+  .btn-send:hover { box-shadow:0 0 14px var(--glow); }
+
+  /* ══════════════════════════════════
+     THREE-PHASE REVEAL PANEL
+  ══════════════════════════════════ */
+  #reveal-layer {
+    display:none; position:fixed; bottom:90px; right:24px; width:306px;
+    background: var(--glass); border:1px solid rgba(212,175,55,0.42); border-radius:20px;
+    padding:22px 18px 18px; backdrop-filter:blur(28px); -webkit-backdrop-filter:blur(28px);
+    box-shadow:0 0 60px var(--glow), 0 24px 64px rgba(0,0,0,0.65);
+    z-index:10000; flex-direction:column; align-items:center; gap:0; overflow:hidden;
+  }
+  #reveal-layer.visible { display:flex; animation:reveal-in 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+  @keyframes reveal-in {
+    from { opacity:0; transform:translateY(24px) scale(0.9); }
+    to   { opacity:1; transform:translateY(0) scale(1); }
+  }
+  #reveal-layer::before {
+    content:''; position:absolute; top:-50%; left:5%; right:5%; height:100%;
+    background: radial-gradient(ellipse,rgba(212,175,55,0.08),transparent 65%);
+    pointer-events:none;
+  }
+
+  /* accent bar driven by color roll */
+  #color-bar {
+    position:absolute; top:0; left:0; right:0; height:3px;
+    background:transparent; border-radius:20px 20px 0 0;
+    transition:background 1.4s ease;
+  }
+
+  .close-btn {
+    position:absolute; top:10px; right:12px; background:none; border:none;
+    color:rgba(212,175,55,0.38); font-size:15px; cursor:pointer; transition:color 0.2s; z-index:1;
+  }
+  .close-btn:hover { color:var(--gold); }
+
+  /* phases stacked */
+  .phases { display:flex; flex-direction:column; gap:14px; width:100%; }
+
+  .phase-block {
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    opacity:0; transform:translateY(10px);
+    transition: opacity 0.65s ease, transform 0.65s ease;
+  }
+  .phase-block.revealed { opacity:1; transform:translateY(0); }
+
+  .phase-label {
+    font-family:var(--font-deco); font-size:7px; letter-spacing:0.26em;
+    color:rgba(212,175,55,0.42); text-transform:uppercase;
+  }
+
+  /* ── PHASE 1: NUMBER ── */
+  #number-slot {
+    font-family:var(--font-deco); font-size:52px; color:var(--gold); line-height:1;
+    filter:drop-shadow(0 0 16px rgba(212,175,55,0.55)); min-width:72px; text-align:center;
+    transition:filter 0.5s;
+  }
+  #num-name   { font-family:var(--font-deco); font-size:10px; color:rgba(212,175,55,0.68); letter-spacing:0.1em; text-align:center; }
+  #num-energy { font-family:var(--font-body); font-size:12px; color:rgba(224,208,240,0.7); font-style:italic; text-align:center; line-height:1.4; padding:0 6px; }
+
+  /* ── SEPARATOR ── */
+  .phase-sep {
+    width:100%; height:1px;
+    background:linear-gradient(90deg,transparent,rgba(212,175,55,0.2),transparent);
+    opacity:0; transition:opacity 0.6s ease;
+  }
+  .phase-sep.revealed { opacity:1; }
+
+  /* ── PHASE 2: CARD ── */
+  #phase-card .card-row { display:flex; align-items:center; gap:14px; width:100%; }
+
+  .card-scene { width:84px; height:130px; perspective:700px; flex-shrink:0; }
+  .card-flip {
+    width:100%; height:100%; position:relative;
+    transform-style:preserve-3d; transition:transform 0.9s cubic-bezier(0.4,0,0.2,1);
+  }
+  .card-flip.flipped { transform:rotateY(180deg); }
+  .card-face {
+    position:absolute; inset:0; border-radius:10px;
+    backface-visibility:hidden; -webkit-backface-visibility:hidden;
+    overflow:hidden; border:1px solid rgba(212,175,55,0.42);
+  }
+  .card-back {
+    background:linear-gradient(145deg,#180430,#0c0118);
+    display:flex; align-items:center; justify-content:center; font-size:34px;
+    animation:card-shim 2.5s ease-in-out infinite;
+  }
+  @keyframes card-shim {
+    0%,100% { filter:brightness(1); }
+    50%      { filter:brightness(1.45) drop-shadow(0 0 10px var(--gold)); }
+  }
+  .card-front {
+    transform:rotateY(180deg);
+    background:linear-gradient(160deg,#0c0118,#180430);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:8px 5px;
+  }
+  .c-emoji { font-size:32px; filter:drop-shadow(0 0 8px var(--gold)); }
+  .c-name  { font-family:var(--font-deco); font-size:7px; color:var(--gold); text-align:center; letter-spacing:0.04em; line-height:1.3; }
+
+  .card-info { flex:1; display:flex; flex-direction:column; gap:4px; justify-content:center; }
+  .ci-name    { font-family:var(--font-deco); font-size:12px; color:var(--gold); letter-spacing:0.04em; }
+  .ci-mood    { font-family:var(--font-body); font-size:12px; color:var(--rose); font-style:italic; }
+  .ci-meaning { font-family:var(--font-body); font-size:12px; color:rgba(224,208,240,0.72); line-height:1.45; }
+
+  /* ── PHASE 3: COLOR ── */
+  #phase-color .color-row { display:flex; align-items:center; gap:14px; width:100%; }
+
+  .color-swatch {
+    width:52px; height:52px; border-radius:50%; flex-shrink:0;
+    border:2px solid rgba(255,255,255,0.12);
+    box-shadow:0 0 0 0 transparent; transition:box-shadow 1.4s ease;
+    position:relative;
+  }
+  .color-swatch.lit { box-shadow:0 0 28px 4px var(--sw-color, #ffffff30); }
+  .color-swatch::after {
+    content:''; position:absolute; inset:0; border-radius:50%;
+    background:radial-gradient(circle at 35% 32%,rgba(255,255,255,0.32),transparent 58%);
+  }
+
+  .color-info { flex:1; display:flex; flex-direction:column; gap:3px; }
+  .color-hex     { font-family:var(--font-deco); font-size:14px; color:var(--gold); letter-spacing:0.07em; }
+  .color-name-el { font-family:var(--font-body); font-size:12px; color:rgba(224,208,240,0.72); font-style:italic; }
+  .color-kw      { font-family:var(--font-body); font-size:11.5px; color:var(--sky); font-style:italic; }
+
+  /* ── READING ── */
+  #phase-reading {
+    background:rgba(212,175,55,0.04); border:1px solid rgba(212,175,55,0.14);
+    border-radius:10px; padding:12px 13px; width:100%;
+  }
+  .reading-label {
+    font-family:var(--font-deco); font-size:7px; letter-spacing:0.26em;
+    color:rgba(212,175,55,0.38); text-transform:uppercase; margin-bottom:8px; text-align:center;
+  }
+  #reading-text { font-family:var(--font-body); font-size:12.5px; color:#d8c8f0; line-height:1.68; text-align:center; font-style:italic; }
+
+  /* ── GLOBAL BANNER ── */
+  #global-banner {
+    display:none; position:fixed; top:0; left:0; right:0; padding:12px 20px;
+    background:linear-gradient(90deg,var(--indigo),var(--plum),var(--indigo));
+    border-bottom:1px solid rgba(212,175,55,0.38);
+    box-shadow:0 0 30px var(--glow); z-index:10001;
+    flex-direction:column; align-items:center; gap:4px;
+    animation:banner-in 0.5s ease;
+  }
+  #global-banner.visible { display:flex; }
+  @keyframes banner-in {
+    from { transform:translateY(-100%); opacity:0; }
+    to   { transform:translateY(0); opacity:1; }
+  }
+  .banner-title   { font-family:var(--font-deco); font-size:10px; color:var(--gold); letter-spacing:0.2em; }
+  .banner-row     { display:flex; gap:12px; align-items:center; }
+  .banner-num     { font-family:var(--font-deco); font-size:24px; color:var(--gold); }
+  .banner-card    { font-family:var(--font-body); font-size:17px; color:#f0e0ff; font-style:italic; }
+  .banner-swatch  { width:20px; height:20px; border-radius:50%; border:2px solid rgba(255,255,255,0.18); }
+  .banner-meaning { font-family:var(--font-body); font-size:12px; color:rgba(212,175,55,0.78); text-align:center; }
+
+  /* ── TOAST ── */
+  #toast {
+    position:fixed; bottom:100px; right:24px; padding:10px 18px;
+    background:rgba(14,6,26,0.95); border-radius:10px; border:1px solid rgba(212,175,55,0.32);
+    color:#e0d0f0; font-family:var(--font-body); font-size:13px; z-index:11000;
+    opacity:0; transform:translateY(8px); transition:all 0.3s ease;
+    pointer-events:none; max-width:258px; text-align:center;
+  }
+  #toast.show { opacity:1; transform:translateY(0); }
+
+  /* ── PARTICLES ── */
+  .particle { position:fixed; pointer-events:none; z-index:9998; animation:float-p 2.2s ease-out forwards; }
+  @keyframes float-p {
+    0%   { opacity:1; transform:translateY(0) scale(1) rotate(0deg); }
+    100% { opacity:0; transform:translateY(-95px) scale(0.2) rotate(420deg); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── GLOBAL BANNER ── -->
+<div id="global-banner">
+  <div class="banner-title">✦ КАРТА ВСЕГО ЭФИРА ✦</div>
+  <div class="banner-row">
+    <div class="banner-num"  id="g-num">—</div>
+    <div class="banner-card" id="g-card">—</div>
+    <div class="banner-swatch" id="g-swatch"></div>
+  </div>
+  <div class="banner-meaning" id="g-meaning"></div>
+</div>
+
+<!-- ══════════════════════════════════
+     THREE-PHASE REVEAL PANEL
+══════════════════════════════════ -->
+<div id="reveal-layer">
+  <div id="color-bar"></div>
+  <button class="close-btn" onclick="closeReveal()">✕</button>
+
+  <div class="phases">
+
+    <!-- Phase 1 — NUMBER -->
+    <div class="phase-block" id="phase-number">
+      <div class="phase-label">✦ Число ✦</div>
+      <div id="number-slot">?</div>
+      <div id="num-name"></div>
+      <div id="num-energy"></div>
+    </div>
+
+    <div class="phase-sep" id="sep1"></div>
+
+    <!-- Phase 2 — CARD -->
+    <div class="phase-block" id="phase-card">
+      <div class="phase-label">✦ Карта ✦</div>
+      <div class="card-row">
+        <div class="card-scene">
+          <div class="card-flip" id="card-flip">
+            <div class="card-face card-back">🔮</div>
+            <div class="card-face card-front">
+              <div class="c-emoji" id="c-emoji">🌙</div>
+              <div class="c-name"  id="c-name"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card-info">
+          <div class="ci-name"    id="ci-name"></div>
+          <div class="ci-mood"    id="ci-mood"></div>
+          <div class="ci-meaning" id="ci-meaning"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-sep" id="sep2"></div>
+
+    <!-- Phase 3 — COLOR -->
+    <div class="phase-block" id="phase-color">
+      <div class="phase-label">✦ Цвет ✦</div>
+      <div class="color-row">
+        <div class="color-swatch" id="color-swatch"></div>
+        <div class="color-info">
+          <div class="color-hex"     id="color-hex"></div>
+          <div class="color-name-el" id="color-name-el"></div>
+          <div class="color-kw"      id="color-kw"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-sep" id="sep3"></div>
+
+    <!-- Phase 4 — READING -->
+    <div class="phase-block" id="phase-reading">
+      <div class="reading-label">✦ Трактовка ✦</div>
+      <div id="reading-text"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── WIDGET ── -->
+<div id="widget">
+  <div id="panel">
+    <div class="panel-title">✦ Таро Оракул ✦</div>
+    <div class="divider"></div>
+    <button class="btn-action" id="btn-draw" onclick="drawCard()">
+      <span class="icon">🃏</span> ВЫТЯНУТЬ КАРТУ
+    </button>
+    <button class="btn-action" onclick="toggleQ()">
+      <span class="icon">💬</span> ЗАДАТЬ ВОПРОС
+    </button>
+    <div id="question-form">
+      <textarea id="question-input" placeholder="Твой вопрос к картам..." maxlength="280"></textarea>
+      <button class="btn-send" onclick="submitQ()">✦ ОТПРАВИТЬ СТРИМЕРУ ✦</button>
+    </div>
+    <div id="cooldown-text" style="display:none"></div>
+  </div>
+  <button id="compact-btn" onclick="togglePanel()">
+    <span class="orb">🔮</span>
+    <span id="compact-label">СПРОСИТЬ КАРТЫ</span>
+  </button>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
+<script>
+const API_BASE = window.TAROT_API_URL || 'http://localhost:3001';
+const WS_BASE  = API_BASE.replace(/^http/, 'ws');
+
+const CARD_EMOJIS = {
+  fool:'🎪', magician:'🔥', priestess:'🌙', empress:'🌸', emperor:'🏰',
+  hierophant:'📜', lovers:'💕', chariot:'⚡', strength:'🦁', hermit:'🕯',
+  wheel:'🎡', justice:'⚖️', hangedman:'🌀', death:'🌑', temperance:'🌊',
+  devil:'🔗', tower:'🌩', star:'💫', moon:'🌙', sun:'☀️',
+  judgement:'🎺', world:'🌍'
+};
+
+const ALL_NUMS = [1,2,3,4,5,6,7,8,9,11,22];
+
+let state = {
+  token: null, channelId: 'test_channel',
+  panelOpen: false, qOpen: false, revealing: false, cdTimer: null,
+};
+
+// ── TWITCH ────────────────────────────────────────────────────────────────────
+if (window.Twitch && window.Twitch.ext) {
+  Twitch.ext.onAuthorized(auth => {
+    state.token = auth.token;
+    state.channelId = auth.channelId;
+    connectWS();
+  });
+} else {
+  state.token = 'local_test_token';
+  setTimeout(connectWS, 400);
+}
+
+function connectWS() {
+  try {
+    const ws = new WebSocket(`${WS_BASE}?channelId=${state.channelId}`);
+    ws.onmessage = e => handleWS(JSON.parse(e.data));
+  } catch {}
+}
+
+function handleWS(msg) {
+  if (msg.type === 'global_card')   showGlobalBanner(msg.event);
+  if (msg.type === 'highlight_event') triggerReveal(msg.event);
+}
+
+// ── PANEL ─────────────────────────────────────────────────────────────────────
+function togglePanel() {
+  state.panelOpen = !state.panelOpen;
+  document.getElementById('panel').classList.toggle('visible', state.panelOpen);
+  document.getElementById('compact-label').textContent = state.panelOpen ? 'ЗАКРЫТЬ' : 'СПРОСИТЬ КАРТЫ';
+}
+function toggleQ() {
+  state.qOpen = !state.qOpen;
+  document.getElementById('question-form').classList.toggle('visible', state.qOpen);
+}
+
+// ══════════════════════════════════════════
+//   DRAW → THREE-PHASE ANIMATED REVEAL
+// ══════════════════════════════════════════
+async function drawCard() {
+  if (state.revealing) return;
+  const btn = document.getElementById('btn-draw');
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/draw`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${state.token}` }
+    });
+    if (res.status === 429) {
+      const d = await res.json();
+      startCooldown(d.remaining);
+      btn.disabled = false;
+      return;
+    }
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    triggerReveal(data);
+    setTimeout(() => { btn.disabled = false; }, 2000);
+  } catch {
+    showToast('✦ Духи не отвечают... попробуй снова ✦');
+    btn.disabled = false;
+  }
+}
+
+function triggerReveal(data) {
+  state.revealing = true;
+  resetReveal();
+  document.getElementById('reveal-layer').classList.add('visible');
+  spawnParticles();
+
+  // ── PHASE 1: slot-machine number ─ delay 0.2s
+  setTimeout(() => {
+    document.getElementById('phase-number').classList.add('revealed');
+    rollNumber(data.number, () => {
+      document.getElementById('num-name').textContent   = data.number.name;
+      document.getElementById('num-energy').textContent = data.number.energy;
+    });
+  }, 200);
+
+  // ── PHASE 2: card flip ─ delay 1.9s
+  setTimeout(() => {
+    document.getElementById('sep1').classList.add('revealed');
+    document.getElementById('phase-card').classList.add('revealed');
+
+    const emoji = CARD_EMOJIS[data.card.id] || '🌟';
+    document.getElementById('c-emoji').textContent    = emoji;
+    document.getElementById('c-name').textContent     = data.card.name;
+    document.getElementById('ci-name').textContent    = data.card.name;
+    document.getElementById('ci-mood').textContent    = data.card.mood;
+    document.getElementById('ci-meaning').textContent = data.card.shortMeaning;
+
+    setTimeout(() => document.getElementById('card-flip').classList.add('flipped'), 350);
+  }, 1900);
+
+  // ── PHASE 3: color bloom ─ delay 3.5s
+  setTimeout(() => {
+    document.getElementById('sep2').classList.add('revealed');
+    document.getElementById('phase-color').classList.add('revealed');
+
+    const { hex, name, keywords } = data.color;
+    const swatch = document.getElementById('color-swatch');
+    swatch.style.background = hex;
+    swatch.style.setProperty('--sw-color', hex + '60');
+
+    document.getElementById('color-hex').textContent     = hex;
+    document.getElementById('color-name-el').textContent = name;
+    document.getElementById('color-kw').textContent      = Array.isArray(keywords) ? keywords[0] : keywords || '';
+
+    // Tint the accent bar with the drawn color
+    document.getElementById('color-bar').style.background =
+      `linear-gradient(90deg, transparent, ${hex}cc, transparent)`;
+
+    setTimeout(() => swatch.classList.add('lit'), 150);
+  }, 3500);
+
+  // ── PHASE 4: reading ─ delay 5.2s
+  setTimeout(() => {
+    document.getElementById('sep3').classList.add('revealed');
+    document.getElementById('phase-reading').classList.add('revealed');
+    document.getElementById('reading-text').textContent = data.reading;
+    state.revealing = false;
+    spawnParticles(true);
+  }, 5200);
+}
+
+// Slot machine roll for number display
+function rollNumber(numberObj, onDone) {
+  const slot = document.getElementById('number-slot');
+  let ticks = 0;
+  const interval = setInterval(() => {
+    slot.textContent = ALL_NUMS[Math.floor(Math.random() * ALL_NUMS.length)];
+    ticks++;
+    if (ticks >= 24) {
+      clearInterval(interval);
+      slot.textContent = numberObj.value;
+      slot.style.filter = 'drop-shadow(0 0 28px rgba(212,175,55,0.95))';
+      setTimeout(() => { slot.style.filter = ''; }, 900);
+      onDone && onDone();
+    }
+  }, 55);
+}
+
+function resetReveal() {
+  ['phase-number','sep1','phase-card','sep2','phase-color','sep3','phase-reading']
+    .forEach(id => document.getElementById(id).classList.remove('revealed'));
+  document.getElementById('card-flip').classList.remove('flipped');
+  document.getElementById('number-slot').textContent = '?';
+  document.getElementById('number-slot').style.filter = '';
+  document.getElementById('num-name').textContent = '';
+  document.getElementById('num-energy').textContent = '';
+  document.getElementById('color-swatch').classList.remove('lit');
+  document.getElementById('color-bar').style.background = 'transparent';
+  document.getElementById('reading-text').textContent = '';
+}
+
+function closeReveal() {
+  document.getElementById('reveal-layer').classList.remove('visible');
+  state.revealing = false;
+}
+
+// ── GLOBAL BANNER ─────────────────────────────────────────────────────────────
+function showGlobalBanner(event) {
+  const { number, card, color } = event;
+  document.getElementById('g-num').textContent     = number?.value ?? '—';
+  document.getElementById('g-card').textContent    = (CARD_EMOJIS[card?.id] || '🌟') + ' ' + (card?.name || '');
+  document.getElementById('g-meaning').textContent = card?.shortMeaning || '';
+  document.getElementById('g-swatch').style.background = color?.hex || '#888';
+  document.getElementById('global-banner').classList.add('visible');
+  spawnParticles(true);
+  setTimeout(() => document.getElementById('global-banner').classList.remove('visible'), 14000);
+}
+
+// ── QUESTION ──────────────────────────────────────────────────────────────────
+async function submitQ() {
+  const text = document.getElementById('question-input').value.trim();
+  if (!text) return;
+  try {
+    const res = await fetch(`${API_BASE}/api/question`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+      body: JSON.stringify({ text })
+    });
+    if (res.status === 429) { const d = await res.json(); showToast(`⏳ Подожди ${d.remaining} сек.`); return; }
+    if (!res.ok) throw new Error();
+    document.getElementById('question-input').value = '';
+    toggleQ();
+    showToast('✦ Вопрос отправлен стримеру ✦');
+  } catch { showToast('✦ Не удалось отправить ✦'); }
+}
+
+// ── COOLDOWN ──────────────────────────────────────────────────────────────────
+function startCooldown(seconds) {
+  const el = document.getElementById('cooldown-text');
+  el.style.display = 'block';
+  let left = seconds;
+  el.textContent = `⏳ Следующая карта через ${left} сек.`;
+  if (state.cdTimer) clearInterval(state.cdTimer);
+  state.cdTimer = setInterval(() => {
+    left--;
+    if (left <= 0) {
+      clearInterval(state.cdTimer);
+      el.style.display = 'none';
+      document.getElementById('btn-draw').disabled = false;
+    } else {
+      el.textContent = `⏳ Следующая карта через ${left} сек.`;
+    }
+  }, 1000);
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ── PARTICLES ─────────────────────────────────────────────────────────────────
+function spawnParticles(big = false) {
+  const syms = ['✦','✧','⋆','💫','✨','⭐','·','*'];
+  const count = big ? 16 : 6;
+  const btn = document.getElementById('compact-btn');
+  const rect = btn.getBoundingClientRect();
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.textContent = syms[Math.floor(Math.random() * syms.length)];
+      Object.assign(p.style, {
+        left:     (rect.left + rect.width/2 + (Math.random()-0.5)*80) + 'px',
+        top:      (rect.top  + (Math.random()-0.5)*28) + 'px',
+        fontSize: (big ? 16 : 11) + 'px',
+        color:    big ? '#d4af37' : '#c8a8ff',
+      });
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 2300);
+    }, i * 65);
+  }
+}
+</script>
+</body>
+</html>

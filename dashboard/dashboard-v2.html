@@ -525,7 +525,28 @@ function renderEvents() {
     return;
   }
 
-  list.innerHTML = events.map(e => `
+  list.innerHTML = events.map(e => {
+    const numBadge = e.number
+      ? `<span style="font-family:var(--font-deco);font-size:11px;color:var(--gold);
+               background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);
+               border-radius:20px;padding:1px 8px;letter-spacing:0.05em;">
+           ${e.number.value} · ${e.number.name}
+         </span>`
+      : '';
+    const colorDot = e.color
+      ? `<span style="display:inline-block;width:12px;height:12px;border-radius:50%;
+               background:${e.color.hex};border:1px solid rgba(255,255,255,0.2);
+               box-shadow:0 0 6px ${e.color.hex}80;vertical-align:middle;margin-left:4px;"
+               title="${e.color.hex}"></span>`
+      : '';
+    const readingSnippet = e.reading
+      ? `<div style="font-size:11.5px;color:rgba(224,208,240,0.55);font-style:italic;
+               margin-top:5px;line-height:1.5;border-top:1px solid rgba(212,175,55,0.1);
+               padding-top:6px;">
+           ${e.reading.slice(0, 120)}${e.reading.length > 120 ? '…' : ''}
+         </div>`
+      : '';
+    return `
     <div class="event-item ${e.status}" id="ev-${e.id}">
       <div class="event-card-emoji">${CARD_EMOJIS[e.card.id] || '🌟'}</div>
       <div class="event-body">
@@ -533,15 +554,20 @@ function renderEvents() {
           <span class="event-user">${formatUserId(e.userId)}</span>
           <span class="event-time">${formatTime(e.timestamp)}</span>
         </div>
-        <div class="event-card-name">${e.card.name}</div>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
+          ${numBadge}
+          <span class="event-card-name">${e.card.name}</span>
+          ${colorDot}
+        </div>
         <div class="event-mood">${e.card.mood}</div>
         <div class="event-meaning">${e.card.shortMeaning}</div>
+        ${readingSnippet}
         <div class="event-actions">
           <button class="btn btn-highlight" onclick="highlightEvent('${e.id}')">📺 На экран</button>
         </div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function renderQuestions() {
