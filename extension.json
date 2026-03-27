@@ -1,0 +1,21 @@
+{
+  "name": "Tarot Oracle",
+  "description": "Интерактивный таро-оверлей для Twitch VTuber стримов. Зрители вытягивают карты, задают вопросы, участвуют в коллективных гаданиях.",
+  "version": "1.0.0",
+  "anchor": "video_overlay",
+  "panel_height": 300,
+  "allowlisted_config_urls": [],
+  "allowlisted_panel_urls": [],
+  "author_name": "Your Name",
+  "support_email": "your@email.com",
+  "summary": "Tarot overlay for streamers",
+  "views": {
+    "video_overlay": {
+      "viewer_url": "overlay/overlay.html",
+      "can_link_external_content": false,
+      "width": 1920,
+      "height": 1080
+    }
+  },
+  "permissions": ["channel:read:subscriptions"]
+}

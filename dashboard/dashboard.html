@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔮 Tarot Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0a0614;
+    --surface:   #110820;
+    --card:      #18102e;
+    --border:    rgba(212,175,55,0.2);
+    --border-hi: rgba(212,175,55,0.6);
+    --gold:      #d4af37;
+    --gold-dim:  rgba(212,175,55,0.6);
+    --rose:      #c87fa8;
+    --sky:       #7ab0d0;
+    --green:     #6bc98e;
+    --glow:      rgba(212,175,55,0.2);
+    --text:      #e0d0f0;
+    --text-dim:  rgba(224,208,240,0.55);
+    --font-deco: 'Cinzel Decorative', serif;
+    --font-body: 'Cormorant Garamond', serif;
+  }
+
+  html { font-size: 16px; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 28px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(90deg, var(--surface), var(--bg));
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .header-brand {
+    font-family: var(--font-deco);
+    font-size: 14px;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header-brand .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: blink 2s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100% { opacity:1; } 50% { opacity: 0.3; } }
+
+  .header-controls { display: flex; gap: 10px; align-items: center; }
+
+  .channel-input {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 13px;
+    width: 180px;
+    outline: none;
+  }
+  .channel-input:focus { border-color: var(--border-hi); }
+
+  /* ── GLOBAL ACTION ── */
+  .global-card {
+    background: linear-gradient(135deg, rgba(212,175,55,0.12), rgba(74,26,138,0.3));
+    border: 1px solid var(--border-hi);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 16px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .global-title {
+    font-family: var(--font-deco);
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+  }
+  .global-desc {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--text-dim);
+    font-style: italic;
+    margin-top: 3px;
+  }
+
+  /* ── BUTTONS ── */
+  .btn {
+    padding: 9px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--gold);
+    font-family: var(--font-deco);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--gold); box-shadow: 0 0 12px var(--glow); }
+  .btn-primary {
+    background: linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.08));
+    border-color: var(--border-hi);
+  }
+  .btn-primary:hover { background: linear-gradient(135deg, rgba(212,175,55,0.35), rgba(212,175,55,0.15)); }
+  .btn-danger { color: #e06080; border-color: rgba(224,96,128,0.3); }
+  .btn-danger:hover { border-color: #e06080; box-shadow: 0 0 12px rgba(224,96,128,0.2); }
+  .btn-highlight { color: var(--sky); border-color: rgba(122,176,208,0.3); }
+  .btn-highlight:hover { border-color: var(--sky); box-shadow: 0 0 12px rgba(122,176,208,0.2); }
+
+  /* ── LAYOUT ── */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 0 28px 28px;
+    flex: 1;
+  }
+  @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+
+  .section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-title {
+    font-family: var(--font-deco);
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .badge {
+    background: rgba(212,175,55,0.15);
+    border: 1px solid rgba(212,175,55,0.3);
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 10px;
+    color: var(--gold-dim);
+  }
+
+  /* ── EVENT CARDS ── */
+  .events-list, .questions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 65vh;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .events-list::-webkit-scrollbar,
+  .questions-list::-webkit-scrollbar { width: 4px; }
+  .events-list::-webkit-scrollbar-thumb,
+  .questions-list::-webkit-scrollbar-thumb {
+    background: rgba(212,175,55,0.2);
+    border-radius: 4px;
+  }
+
+  .event-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+    animation: slide-in 0.3s ease;
+  }
+  @keyframes slide-in {
+    from { opacity: 0; transform: translateX(-8px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  .event-item:hover { border-color: rgba(212,175,55,0.4); }
+  .event-item.highlighted { border-color: var(--sky); box-shadow: 0 0 12px rgba(122,176,208,0.15); }
+  .event-item.new { border-color: rgba(107,201,142,0.4); }
+
+  .event-card-emoji { font-size: 28px; flex-shrink: 0; filter: drop-shadow(0 0 6px rgba(212,175,55,0.4)); }
+
+  .event-body { flex: 1; min-width: 0; }
+  .event-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+  .event-user {
+    font-family: var(--font-deco);
+    font-size: 9px;
+    color: var(--rose);
+    letter-spacing: 0.05em;
+  }
+  .event-time {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-style: italic;
+  }
+  .event-card-name {
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gold);
+  }
+  .event-meaning {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-style: italic;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .event-mood {
+    font-size: 11px;
+    color: var(--sky);
+    margin-top: 2px;
+  }
+  .event-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* ── QUESTION CARDS ── */
+  .question-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    animation: slide-in 0.3s ease;
+    transition: border-color 0.2s;
+  }
+  .question-item:hover { border-color: rgba(212,175,55,0.4); }
+  .question-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .question-user {
+    font-family: var(--font-deco);
+    font-size: 9px;
+    color: var(--rose);
+    letter-spacing: 0.05em;
+  }
+  .question-text {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.5;
+    font-style: italic;
+  }
+  .question-time {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-style: italic;
+  }
+  .question-actions { margin-top: 8px; display: flex; gap: 6px; }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--text-dim);
+    font-style: italic;
+    font-size: 14px;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+  }
+  .empty-icon { font-size: 32px; margin-bottom: 8px; opacity: 0.5; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px);
+    padding: 10px 24px;
+    background: var(--card);
+    border: 1px solid var(--border-hi);
+    border-radius: 40px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--gold);
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    z-index: 9999;
+    white-space: nowrap;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── LAST GLOBAL ── */
+  #last-global {
+    display: none;
+    margin: 0 28px;
+    padding: 12px 18px;
+    background: rgba(122,176,208,0.08);
+    border: 1px solid rgba(122,176,208,0.3);
+    border-radius: 10px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--sky);
+    font-style: italic;
+  }
+  #last-global.visible { display: block; }
+
+  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .filter-btn {
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    font-family: var(--font-body);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-btn.active, .filter-btn:hover {
+    border-color: var(--gold-dim);
+    color: var(--gold);
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="header-brand">
+    <div class="dot"></div>
+    🔮 TAROT DASHBOARD
+  </div>
+  <div class="header-controls">
+    <input class="channel-input" id="channel-id-input" placeholder="Channel ID" value="test_channel" />
+    <input class="channel-input" id="token-input" placeholder="Bearer Token (optional)" style="width:220px" />
+    <button class="btn btn-primary" onclick="reconnect()">✦ CONNECT</button>
+  </div>
+</header>
+
+<!-- ── GLOBAL ACTION ── -->
+<div class="global-card">
+  <div>
+    <div class="global-title">✦ КАРТА ВСЕГО ЭФИРА</div>
+    <div class="global-desc">Запустить общую карту для всех зрителей канала</div>
+  </div>
+  <button class="btn btn-primary" onclick="launchGlobal()">🌌 ЗАПУСТИТЬ ГЛОБАЛЬНУЮ КАРТУ</button>
+</div>
+
+<!-- ── LAST GLOBAL ── -->
+<div id="last-global"></div>
+
+<!-- ── MAIN GRID ── -->
+<div class="main-grid">
+
+  <!-- Events -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        🃏 СОБЫТИЯ ЗРИТЕЛЕЙ
+        <span class="badge" id="events-count">0</span>
+      </div>
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="setFilter('events','all',this)">Все</button>
+        <button class="filter-btn" onclick="setFilter('events','new',this)">Новые</button>
+        <button class="filter-btn" onclick="setFilter('events','highlighted',this)">На экране</button>
+      </div>
+    </div>
+    <div class="events-list" id="events-list">
+      <div class="empty-state"><div class="empty-icon">🃏</div>Жди зрителей...</div>
+    </div>
+  </div>
+
+  <!-- Questions -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        💬 ВОПРОСЫ ЗРИТЕЛЕЙ
+        <span class="badge" id="questions-count">0</span>
+      </div>
+    </div>
+    <div class="questions-list" id="questions-list">
+      <div class="empty-state"><div class="empty-icon">💬</div>Вопросов пока нет...</div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const API_BASE = window.TAROT_API_URL || 'http://localhost:3001';
+const WS_BASE  = API_BASE.replace(/^http/, 'ws');
+
+const CARD_EMOJIS = {
+  fool:'🎪', magician:'🔥', priestess:'🌙', empress:'🌸', emperor:'🏰',
+  hierophant:'📜', lovers:'💕', chariot:'⚡', strength:'🦁', hermit:'🕯',
+  wheel:'🎡', justice:'⚖️', hangedman:'🌀', death:'🌑', temperance:'🌊',
+  devil:'🔗', tower:'⚡', star:'💫', moon:'🌙', sun:'☀️',
+  judgement:'🎺', world:'🌍'
+};
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let state = {
+  events: [],
+  questions: [],
+  ws: null,
+  filters: { events: 'all', questions: 'all' },
+  channelId: 'test_channel',
+  token: '',
+};
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function init() {
+  state.channelId = document.getElementById('channel-id-input').value;
+  state.token = document.getElementById('token-input').value || 'dashboard_token';
+  await Promise.all([fetchEvents(), fetchQuestions()]);
+  connectWS();
+}
+
+function reconnect() {
+  if (state.ws) state.ws.close();
+  init();
+  showToast('✦ Подключение...');
+}
+
+// ── FETCH ─────────────────────────────────────────────────────────────────────
+async function fetchEvents() {
+  try {
+    const res = await fetch(`${API_BASE}/api/events/${state.channelId}`, {
+      headers: { 'Authorization': `Bearer ${state.token}` }
+    });
+    state.events = await res.json();
+    renderEvents();
+  } catch { state.events = []; }
+}
+
+async function fetchQuestions() {
+  try {
+    const res = await fetch(`${API_BASE}/api/questions/${state.channelId}`, {
+      headers: { 'Authorization': `Bearer ${state.token}` }
+    });
+    state.questions = await res.json();
+    renderQuestions();
+  } catch { state.questions = []; }
+}
+
+// ── WEBSOCKET ─────────────────────────────────────────────────────────────────
+function connectWS() {
+  try {
+    state.ws = new WebSocket(`${WS_BASE}?channelId=${state.channelId}`);
+    state.ws.onopen = () => showToast('✦ WebSocket подключён ✦');
+    state.ws.onmessage = e => {
+      const msg = JSON.parse(e.data);
+      handleWS(msg);
+    };
+    state.ws.onclose = () => setTimeout(connectWS, 3000);
+  } catch {}
+}
+
+function handleWS(msg) {
+  if (msg.type === 'new_event') {
+    state.events.unshift(msg.event);
+    renderEvents();
+    flashNew(msg.event.id);
+  }
+  if (msg.type === 'new_question') {
+    state.questions.unshift(msg.question);
+    renderQuestions();
+  }
+  if (msg.type === 'question_hidden') {
+    state.questions = state.questions.filter(q => q.id !== msg.questionId);
+    renderQuestions();
+  }
+  if (msg.type === 'global_card') {
+    showLastGlobal(msg.event.card);
+    showToast('✦ Глобальная карта запущена: ' + msg.event.card.name);
+  }
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function renderEvents() {
+  const list = document.getElementById('events-list');
+  const filter = state.filters.events;
+  let events = state.events;
+  if (filter !== 'all') events = events.filter(e => e.status === filter);
+
+  document.getElementById('events-count').textContent = events.length;
+
+  if (!events.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">🃏</div>Нет событий</div>';
+    return;
+  }
+
+  list.innerHTML = events.map(e => `
+    <div class="event-item ${e.status}" id="ev-${e.id}">
+      <div class="event-card-emoji">${CARD_EMOJIS[e.card.id] || '🌟'}</div>
+      <div class="event-body">
+        <div class="event-top">
+          <span class="event-user">${formatUserId(e.userId)}</span>
+          <span class="event-time">${formatTime(e.timestamp)}</span>
+        </div>
+        <div class="event-card-name">${e.card.name}</div>
+        <div class="event-mood">${e.card.mood}</div>
+        <div class="event-meaning">${e.card.shortMeaning}</div>
+        <div class="event-actions">
+          <button class="btn btn-highlight" onclick="highlightEvent('${e.id}')">📺 На экран</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderQuestions() {
+  const list = document.getElementById('questions-list');
+  const questions = state.questions;
+
+  document.getElementById('questions-count').textContent = questions.length;
+
+  if (!questions.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div>Вопросов пока нет...</div>';
+    return;
+  }
+
+  list.innerHTML = questions.map(q => `
+    <div class="question-item" id="qu-${q.id}">
+      <div class="question-top">
+        <span class="question-user">${formatUserId(q.userId)}</span>
+        <span class="question-time">${formatTime(q.timestamp)}</span>
+      </div>
+      <div class="question-text">"${escapeHtml(q.text)}"</div>
+      <div class="question-actions">
+        <button class="btn btn-danger" onclick="hideQuestion('${q.id}')">🚫 Скрыть</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── ACTIONS ───────────────────────────────────────────────────────────────────
+async function launchGlobal() {
+  try {
+    const res = await fetch(`${API_BASE}/api/global/${state.channelId}`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${state.token}` }
+    });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    showLastGlobal(data.card);
+    showToast('✦ Запущена: ' + data.card.name + ' ✦');
+  } catch {
+    showToast('Ошибка запуска глобальной карты');
+  }
+}
+
+async function highlightEvent(id) {
+  try {
+    const res = await fetch(`${API_BASE}/api/events/${id}/highlight`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${state.token}` }
+    });
+    if (!res.ok) throw new Error();
+    const ev = state.events.find(e => e.id === id);
+    if (ev) ev.status = 'highlighted';
+    renderEvents();
+    showToast('✦ Событие выделено на стриме ✦');
+  } catch {
+    showToast('Ошибка выделения события');
+  }
+}
+
+async function hideQuestion(id) {
+  try {
+    const res = await fetch(`${API_BASE}/api/questions/${id}/hide`, {
+      method: 'PATCH',
+      headers: { 'Authorization': `Bearer ${state.token}` }
+    });
+    if (!res.ok) throw new Error();
+    state.questions = state.questions.filter(q => q.id !== id);
+    renderQuestions();
+    showToast('Вопрос скрыт');
+  } catch {
+    showToast('Ошибка скрытия вопроса');
+  }
+}
+
+// ── FILTERS ───────────────────────────────────────────────────────────────────
+function setFilter(section, value, btn) {
+  state.filters[section] = value;
+  btn.closest('.filter-row').querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (section === 'events') renderEvents();
+  else renderQuestions();
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function formatUserId(id) {
+  if (!id) return 'Аноним';
+  if (id.startsWith('A')) return 'Гость ' + id.slice(-4);
+  if (id.startsWith('U')) return 'Зритель ' + id.slice(-4);
+  return id.slice(0, 10);
+}
+
+function formatTime(ts) {
+  const d = new Date(ts);
+  return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function flashNew(id) {
+  setTimeout(() => {
+    const el = document.getElementById('ev-' + id);
+    if (el) el.classList.add('new');
+    setTimeout(() => el && el.classList.remove('new'), 3000);
+  }, 100);
+}
+
+function showLastGlobal(card) {
+  const el = document.getElementById('last-global');
+  el.textContent = `✦ Последняя глобальная карта: ${CARD_EMOJIS[card.id] || '🌟'} ${card.name} — ${card.shortMeaning}`;
+  el.classList.add('visible');
+}
+
+// ── START ─────────────────────────────────────────────────────────────────────
+init();
+
+// Auto-refresh every 30s
+setInterval(() => {
+  fetchEvents();
+  fetchQuestions();
+}, 30000);
+</script>
+</body>
+</html>

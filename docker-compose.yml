@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  api:
+    build: ./api
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - TWITCH_SECRET=${TWITCH_SECRET:-}
+    restart: unless-stopped
+
+  dashboard:
+    image: nginx:alpine
+    ports:
+      - "3002:80"
+    volumes:
+      - ./dashboard:/usr/share/nginx/html:ro
+    restart: unless-stopped
