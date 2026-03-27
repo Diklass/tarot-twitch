@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔮 Tarot Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0a0614;
+    --surface:   #110820;
+    --card:      #18102e;
+    --border:    rgba(212,175,55,0.2);
+    --border-hi: rgba(212,175,55,0.6);
+    --gold:      #d4af37;
+    --gold-dim:  rgba(212,175,55,0.6);
+    --rose:      #c87fa8;
+    --sky:       #7ab0d0;
+    --green:     #6bc98e;
+    --glow:      rgba(212,175,55,0.2);
+    --text:      #e0d0f0;
+    --text-dim:  rgba(224,208,240,0.55);
+    --font-deco: 'Cinzel Decorative', serif;
+    --font-body: 'Cormorant Garamond', serif;
+  }
+
+  html { font-size: 16px; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 28px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(90deg, var(--surface), var(--bg));
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .header-brand {
+    font-family: var(--font-deco);
+    font-size: 14px;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header-brand .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: blink 2s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100% { opacity:1; } 50% { opacity: 0.3; } }
+
+  .header-controls { display: flex; gap: 10px; align-items: center; }
+
+  .channel-input {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 13px;
+    width: 180px;
+    outline: none;
+  }
+  .channel-input:focus { border-color: var(--border-hi); }
+
+  /* ── GLOBAL ACTION ── */
+  .global-card {
+    background: linear-gradient(135deg, rgba(212,175,55,0.12), rgba(74,26,138,0.3));
+    border: 1px solid var(--border-hi);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 16px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .global-title {
+    font-family: var(--font-deco);
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+  }
+  .global-desc {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--text-dim);
+    font-style: italic;
+    margin-top: 3px;
+  }
+
+  /* ── BUTTONS ── */
+  .btn {
+    padding: 9px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--gold);
+    font-family: var(--font-deco);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--gold); box-shadow: 0 0 12px var(--glow); }
+  .btn-primary {
+    background: linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.08));
+    border-color: var(--border-hi);
+  }
+  .btn-primary:hover { background: linear-gradient(135deg, rgba(212,175,55,0.35), rgba(212,175,55,0.15)); }
+  .btn-danger { color: #e06080; border-color: rgba(224,96,128,0.3); }
+  .btn-danger:hover { border-color: #e06080; box-shadow: 0 0 12px rgba(224,96,128,0.2); }
+  .btn-highlight { color: var(--sky); border-color: rgba(122,176,208,0.3); }
+  .btn-highlight:hover { border-color: var(--sky); box-shadow: 0 0 12px rgba(122,176,208,0.2); }
+
+  /* ── LAYOUT ── */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 0 28px 28px;
+    flex: 1;
+  }
+  @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+
+  .section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-title {
+    font-family: var(--font-deco);
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .badge {
+    background: rgba(212,175,55,0.15);
+    border: 1px solid rgba(212,175,55,0.3);
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 10px;
+    color: var(--gold-dim);
+  }
+
+  /* ── EVENT CARDS ── */
+  .events-list, .questions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 65vh;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .events-list::-webkit-scrollbar,
+  .questions-list::-webkit-scrollbar { width: 4px; }
+  .events-list::-webkit-scrollbar-thumb,
+  .questions-list::-webkit-scrollbar-thumb {
+    background: rgba(212,175,55,0.2);
+    border-radius: 4px;
+  }
+
+  .event-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+    animation: slide-in 0.3s ease;
+  }
+  @keyframes slide-in {
+    from { opacity: 0; transform: translateX(-8px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  .event-item:hover { border-color: rgba(212,175,55,0.4); }
+  .event-item.highlighted { border-color: var(--sky); box-shadow: 0 0 12px rgba(122,176,208,0.15); }
+  .event-item.new { border-color: rgba(107,201,142,0.4); }
+
+  .event-card-emoji { font-size: 28px; flex-shrink: 0; filter: drop-shadow(0 0 6px rgba(212,175,55,0.4)); }
+
+  .event-body { flex: 1; min-width: 0; }
+  .event-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+  .event-user {
+    font-family: var(--font-deco);
+    font-size: 9px;
+    color: var(--rose);
+    letter-spacing: 0.05em;
+  }
+  .event-time {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-style: italic;
+  }
+  .event-card-name {
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gold);
+  }
+  .event-meaning {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-style: italic;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .event-mood {
+    font-size: 11px;
+    color: var(--sky);
+    margin-top: 2px;
+  }
+  .event-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* ── QUESTION CARDS ── */
+  .question-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    animation: slide-in 0.3s ease;
+    transition: border-color 0.2s;
+  }
+  .question-item:hover { border-color: rgba(212,175,55,0.4); }
+  .question-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .question-user {
+    font-family: var(--font-deco);
+    font-size: 9px;
+    color: var(--rose);
+    letter-spacing: 0.05em;
+  }
+  .question-text {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.5;
+    font-style: italic;
+  }
+  .question-time {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-style: italic;
+  }
+  .question-actions { margin-top: 8px; display: flex; gap: 6px; }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--text-dim);
+    font-style: italic;
+    font-size: 14px;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+  }
+  .empty-icon { font-size: 32px; margin-bottom: 8px; opacity: 0.5; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px);
+    padding: 10px 24px;
+    background: var(--card);
+    border: 1px solid var(--border-hi);
+    border-radius: 40px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--gold);
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    z-index: 9999;
+    white-space: nowrap;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── LAST GLOBAL ── */
+  #last-global {
+    display: none;
+    margin: 0 28px;
+    padding: 12px 18px;
+    background: rgba(122,176,208,0.08);
+    border: 1px solid rgba(122,176,208,0.3);
+    border-radius: 10px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--sky);
+    font-style: italic;
+  }
+  #last-global.visible { display: block; }
+
+  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .filter-btn {
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    font-family: var(--font-body);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-btn.active, .filter-btn:hover {
+    border-color: var(--gold-dim);
+    color: var(--gold);
+  }
+
+  /* ══════════════════════════════════════════
+     QUESTION READING MODAL
+  ══════════════════════════════════════════ */
+  #reading-modal-backdrop {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(6, 2, 14, 0.88);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+  #reading-modal-backdrop.visible { display: flex; }
+
+  #reading-modal {
+    width: 520px;
+    max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    background: #0e0620;
+    border: 1px solid rgba(212,175,55,0.45);
+    border-radius: 20px;
+    padding: 28px 28px 24px;
+    position: relative;
+    box-shadow: 0 0 80px rgba(212,175,55,0.18), 0 32px 80px rgba(0,0,0,0.7);
+    animation: modal-in 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  #reading-modal::-webkit-scrollbar { width: 4px; }
+  #reading-modal::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.2); border-radius: 4px; }
+
+  @keyframes modal-in {
+    from { opacity: 0; transform: scale(0.93) translateY(16px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  /* color accent line */
+  #modal-color-bar {
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    border-radius: 20px 20px 0 0;
+    background: transparent;
+    transition: background 1.4s ease;
+  }
+
+  .modal-close {
+    position: absolute; top: 14px; right: 16px;
+    background: none; border: none;
+    color: rgba(212,175,55,0.4); font-size: 18px; cursor: pointer;
+    transition: color 0.2s; line-height: 1;
+  }
+  .modal-close:hover { color: var(--gold); }
+
+  /* question context block */
+  #modal-question-ctx {
+    background: rgba(212,175,55,0.05);
+    border: 1px solid rgba(212,175,55,0.2);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 22px;
+  }
+  .ctx-from {
+    font-family: var(--font-deco);
+    font-size: 8px; letter-spacing: 0.2em;
+    color: rgba(212,175,55,0.5);
+    margin-bottom: 5px;
+  }
+  .ctx-text {
+    font-family: var(--font-body);
+    font-size: 16px; font-style: italic;
+    color: var(--text); line-height: 1.55;
+  }
+
+  /* draw button inside modal */
+  #modal-draw-btn {
+    width: 100%;
+    padding: 13px;
+    background: linear-gradient(135deg, rgba(212,175,55,0.18), rgba(74,26,138,0.35));
+    border: 1px solid rgba(212,175,55,0.5);
+    border-radius: 12px;
+    color: var(--gold);
+    font-family: var(--font-deco);
+    font-size: 11px; letter-spacing: 0.1em;
+    cursor: pointer; transition: all 0.25s;
+    margin-bottom: 20px;
+  }
+  #modal-draw-btn:hover:not(:disabled) {
+    box-shadow: 0 0 24px rgba(212,175,55,0.3);
+    transform: translateY(-1px);
+  }
+  #modal-draw-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  /* phases inside modal */
+  .modal-phases { display: flex; flex-direction: column; gap: 16px; }
+
+  .m-phase {
+    opacity: 0; transform: translateY(10px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .m-phase.revealed { opacity: 1; transform: translateY(0); }
+
+  .m-sep {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(212,175,55,0.2), transparent);
+    opacity: 0; transition: opacity 0.5s ease;
+  }
+  .m-sep.revealed { opacity: 1; }
+
+  .m-label {
+    font-family: var(--font-deco);
+    font-size: 8px; letter-spacing: 0.22em;
+    color: rgba(212,175,55,0.4); text-transform: uppercase;
+    margin-bottom: 8px; text-align: center;
+  }
+
+  /* number phase */
+  .m-number-row {
+    display: flex; align-items: center; gap: 16px;
+    background: rgba(212,175,55,0.04);
+    border: 1px solid rgba(212,175,55,0.12);
+    border-radius: 12px; padding: 14px 18px;
+  }
+  #m-number-slot {
+    font-family: var(--font-deco);
+    font-size: 52px; color: var(--gold); line-height: 1;
+    min-width: 72px; text-align: center;
+    filter: drop-shadow(0 0 14px rgba(212,175,55,0.5));
+    transition: filter 0.5s;
+  }
+  .m-num-info { flex: 1; }
+  #m-num-name   { font-family: var(--font-deco); font-size: 11px; color: var(--gold); letter-spacing: 0.08em; margin-bottom: 4px; }
+  #m-num-energy { font-family: var(--font-body); font-size: 13px; color: var(--text-dim); font-style: italic; line-height: 1.5; }
+
+  /* card phase */
+  .m-card-row { display: flex; align-items: center; gap: 18px; }
+
+  .m-card-scene { width: 96px; height: 148px; perspective: 800px; flex-shrink: 0; }
+  .m-card-flip {
+    width: 100%; height: 100%; position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.9s cubic-bezier(0.4,0,0.2,1);
+  }
+  .m-card-flip.flipped { transform: rotateY(180deg); }
+  .m-card-face {
+    position: absolute; inset: 0; border-radius: 11px;
+    backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    overflow: hidden; border: 1px solid rgba(212,175,55,0.45);
+  }
+  .m-card-back {
+    background: linear-gradient(145deg, #1c0540, #0a0120);
+    display: flex; align-items: center; justify-content: center; font-size: 40px;
+    animation: card-shim 2.5s ease-in-out infinite;
+  }
+  .m-card-front {
+    transform: rotateY(180deg);
+    background: linear-gradient(160deg, #0a0120, #1c0540);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 8px; padding: 10px 6px;
+  }
+  .m-c-emoji { font-size: 38px; filter: drop-shadow(0 0 10px var(--gold)); }
+  .m-c-name  { font-family: var(--font-deco); font-size: 8px; color: var(--gold); text-align: center; letter-spacing: 0.04em; line-height: 1.3; }
+
+  .m-card-info { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+  .m-ci-name    { font-family: var(--font-deco); font-size: 15px; color: var(--gold); letter-spacing: 0.04em; }
+  .m-ci-mood    { font-family: var(--font-body); font-size: 14px; color: var(--rose); font-style: italic; }
+  .m-ci-meaning { font-family: var(--font-body); font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+  .m-ci-advice  {
+    font-family: var(--font-body); font-size: 13px; color: var(--sky); font-style: italic;
+    padding: 8px 12px; border: 1px solid rgba(122,176,208,0.2);
+    border-radius: 8px; background: rgba(122,176,208,0.04); line-height: 1.5;
+    margin-top: 4px;
+  }
+
+  /* color phase */
+  .m-color-row { display: flex; align-items: center; gap: 18px; }
+  .m-swatch {
+    width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.12);
+    box-shadow: 0 0 0 0 transparent; transition: box-shadow 1.4s ease;
+    position: relative;
+  }
+  .m-swatch::after {
+    content: ''; position: absolute; inset: 0; border-radius: 50%;
+    background: radial-gradient(circle at 35% 32%, rgba(255,255,255,0.3), transparent 58%);
+  }
+  .m-swatch.lit { box-shadow: 0 0 32px 6px var(--sw-c, #ffffff20); }
+
+  .m-color-info { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+  #m-color-hex  { font-family: var(--font-deco); font-size: 18px; color: var(--gold); letter-spacing: 0.06em; }
+  #m-color-name { font-family: var(--font-body); font-size: 14px; color: var(--text-dim); font-style: italic; }
+  #m-color-kw   { font-family: var(--font-body); font-size: 13px; color: var(--sky); font-style: italic; }
+
+  /* reading phase */
+  .m-reading-box {
+    background: rgba(212,175,55,0.04);
+    border: 1px solid rgba(212,175,55,0.15);
+    border-radius: 12px; padding: 16px 18px;
+  }
+  #m-reading-text {
+    font-family: var(--font-body); font-size: 15px; color: #d8c8f0;
+    line-height: 1.7; font-style: italic; text-align: center;
+  }
+
+  /* highlight btn in modal */
+  #modal-highlight-btn {
+    width: 100%; margin-top: 18px; padding: 11px;
+    background: rgba(122,176,208,0.1); border: 1px solid rgba(122,176,208,0.35);
+    border-radius: 10px; color: var(--sky);
+    font-family: var(--font-deco); font-size: 9px; letter-spacing: 0.1em;
+    cursor: pointer; transition: all 0.2s; display: none;
+  }
+  #modal-highlight-btn:hover { box-shadow: 0 0 16px rgba(122,176,208,0.2); }
+  #modal-highlight-btn.visible { display: block; }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="header-brand">
+    <div class="dot"></div>
+    🔮 TAROT DASHBOARD
+  </div>
+  <div class="header-controls">
+    <input class="channel-input" id="channel-id-input" placeholder="Channel ID" value="test_channel" />
+    <input class="channel-input" id="token-input" placeholder="Bearer Token (optional)" style="width:220px" />
+    <button class="btn btn-primary" onclick="reconnect()">✦ CONNECT</button>
+  </div>
+</header>
+
+<!-- ── GLOBAL ACTION ── -->
+<div class="global-card">
+  <div>
+    <div class="global-title">✦ КАРТА ВСЕГО ЭФИРА</div>
+    <div class="global-desc">Запустить общую карту для всех зрителей канала</div>
+  </div>
+  <button class="btn btn-primary" onclick="launchGlobal()">🌌 ЗАПУСТИТЬ ГЛОБАЛЬНУЮ КАРТУ</button>
+</div>
+
+<!-- ── LAST GLOBAL ── -->
+<div id="last-global"></div>
+
+<!-- ── MAIN GRID ── -->
+<div class="main-grid">
+
+  <!-- Events -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        🃏 СОБЫТИЯ ЗРИТЕЛЕЙ
+        <span class="badge" id="events-count">0</span>
+      </div>
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="setFilter('events','all',this)">Все</button>
+        <button class="filter-btn" onclick="setFilter('events','new',this)">Новые</button>
+        <button class="filter-btn" onclick="setFilter('events','highlighted',this)">На экране</button>
+      </div>
+    </div>
+    <div class="events-list" id="events-list">
+      <div class="empty-state"><div class="empty-icon">🃏</div>Жди зрителей...</div>
+    </div>
+  </div>
+
+  <!-- Questions -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        💬 ВОПРОСЫ ЗРИТЕЛЕЙ
+        <span class="badge" id="questions-count">0</span>
+      </div>
+    </div>
+    <div class="questions-list" id="questions-list">
+      <div class="empty-state"><div class="empty-icon">💬</div>Вопросов пока нет...</div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<!-- ══════════════════════════════════════════
+     QUESTION READING MODAL
+══════════════════════════════════════════ -->
+<div id="reading-modal-backdrop" onclick="closeReadingModal(event)">
+  <div id="reading-modal">
+    <div id="modal-color-bar"></div>
+    <button class="modal-close" onclick="closeReadingModal()">✕</button>
+
+    <!-- Question context -->
+    <div id="modal-question-ctx">
+      <div class="ctx-from">✦ ВОПРОС ЗРИТЕЛЯ ✦</div>
+      <div class="ctx-text" id="modal-q-text"></div>
+    </div>
+
+    <!-- Draw trigger -->
+    <button id="modal-draw-btn" onclick="drawForQuestion()">
+      🃏 ВЫТЯНУТЬ КАРТУ ДЛЯ ЭТОГО ВОПРОСА
+    </button>
+
+    <!-- Phases -->
+    <div class="modal-phases" id="modal-phases" style="display:none">
+
+      <!-- Phase 1: Number -->
+      <div class="m-phase" id="m-phase-num">
+        <div class="m-label">✦ Число ✦</div>
+        <div class="m-number-row">
+          <div id="m-number-slot">?</div>
+          <div class="m-num-info">
+            <div id="m-num-name"></div>
+            <div id="m-num-energy"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="m-sep" id="m-sep1"></div>
+
+      <!-- Phase 2: Card -->
+      <div class="m-phase" id="m-phase-card">
+        <div class="m-label">✦ Карта ✦</div>
+        <div class="m-card-row">
+          <div class="m-card-scene">
+            <div class="m-card-flip" id="m-card-flip">
+              <div class="m-card-face m-card-back">🔮</div>
+              <div class="m-card-face m-card-front">
+                <div class="m-c-emoji" id="m-c-emoji">🌙</div>
+                <div class="m-c-name"  id="m-c-name"></div>
+              </div>
+            </div>
+          </div>
+          <div class="m-card-info">
+            <div class="m-ci-name"    id="m-ci-name"></div>
+            <div class="m-ci-mood"    id="m-ci-mood"></div>
+            <div class="m-ci-meaning" id="m-ci-meaning"></div>
+            <div class="m-ci-advice"  id="m-ci-advice"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="m-sep" id="m-sep2"></div>
+
+      <!-- Phase 3: Color -->
+      <div class="m-phase" id="m-phase-color">
+        <div class="m-label">✦ Цвет ✦</div>
+        <div class="m-color-row">
+          <div class="m-swatch" id="m-swatch"></div>
+          <div class="m-color-info">
+            <div id="m-color-hex"></div>
+            <div id="m-color-name"></div>
+            <div id="m-color-kw"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="m-sep" id="m-sep3"></div>
+
+      <!-- Phase 4: Reading -->
+      <div class="m-phase" id="m-phase-reading">
+        <div class="m-label">✦ Трактовка ✦</div>
+        <div class="m-reading-box">
+          <div id="m-reading-text"></div>
+        </div>
+      </div>
+
+    </div><!-- /modal-phases -->
+
+    <button id="modal-highlight-btn" onclick="highlightModalReading()">
+      📺 ПОКАЗАТЬ РЕЗУЛЬТАТ НА СТРИМЕ
+    </button>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const API_BASE = window.TAROT_API_URL || 'http://localhost:3001';
+const WS_BASE  = API_BASE.replace(/^http/, 'ws');
+
+const CARD_EMOJIS = {
+  fool:'🎪', magician:'🔥', priestess:'🌙', empress:'🌸', emperor:'🏰',
+  hierophant:'📜', lovers:'💕', chariot:'⚡', strength:'🦁', hermit:'🕯',
+  wheel:'🎡', justice:'⚖️', hangedman:'🌀', death:'🌑', temperance:'🌊',
+  devil:'🔗', tower:'⚡', star:'💫', moon:'🌙', sun:'☀️',
+  judgement:'🎺', world:'🌍'
+};
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let state = {
+  events: [],
+  questions: [],
+  ws: null,
+  filters: { events: 'all', questions: 'all' },
+  channelId: 'test_channel',
+  token: '',
+};
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function init() {
+  state.channelId = document.getElementById('channel-id-input').value;
+  state.token = document.getElementById('token-input').value || 'dashboard_token';
+  await Promise.all([fetchEvents(), fetchQuestions()]);
+  connectWS();
+}
+
+function reconnect() {
+  if (state.ws) state.ws.close();
+  init();
+  showToast('✦ Подключение...');
+}
+
+// ── FETCH ─────────────────────────────────────────────────────────────────────
+async function fetchEvents() {
+  try {
+    const res = await fetch(`${API_BASE}/api/events/${state.channelId}`, {
+      headers: { 'Authorization': `Bearer ${state.token}` }
+    });
+    state.events = await res.json();
+    renderEvents();
+  } catch { state.events = []; }
+}
+
+async function fetchQuestions() {
+  try {
+    const res = await fetch(`${API_BASE}/api/questions/${state.channelId}`, {
+      headers: { 'Authorization': `Bearer ${state.token}` }
+    });
+    state.questions = await res.json();
+    renderQuestions();
+  } catch { state.questions = []; }
+}
+
+// ── WEBSOCKET ─────────────────────────────────────────────────────────────────
+function connectWS() {
+  try {
+    state.ws = new WebSocket(`${WS_BASE}?channelId=${state.channelId}`);
+    state.ws.onopen = () => showToast('✦ WebSocket подключён ✦');
+    state.ws.onmessage = e => {
+      const msg = JSON.parse(e.data);
+      handleWS(msg);
+    };
+    state.ws.onclose = () => setTimeout(connectWS, 3000);
+  } catch {}
+}
+
+function handleWS(msg) {
+  if (msg.type === 'new_event') {
+    state.events.unshift(msg.event);
+    renderEvents();
+    flashNew(msg.event.id);
+  }
+  if (msg.type === 'new_question') {
+    state.questions.unshift(msg.question);
+    renderQuestions();
+  }
+  if (msg.type === 'question_hidden') {
+    state.questions = state.questions.filter(q => q.id !== msg.questionId);
+    renderQuestions();
+  }
+  if (msg.type === 'global_card') {
+    showLastGlobal(msg.event.card);
+    showToast('✦ Глобальная карта запущена: ' + msg.event.card.name);
+  }
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function renderEvents() {
+  const list = document.getElementById('events-list');
+  const filter = state.filters.events;
+  let events = state.events;
+  if (filter !== 'all') events = events.filter(e => e.status === filter);
+
+  document.getElementById('events-count').textContent = events.length;
+
+  if (!events.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">🃏</div>Нет событий</div>';
+    return;
+  }
+
+  list.innerHTML = events.map(e => {
+    const numBadge = e.number
+      ? `<span style="font-family:var(--font-deco);font-size:11px;color:var(--gold);
+               background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);
+               border-radius:20px;padding:1px 8px;letter-spacing:0.05em;">
+           ${e.number.value} · ${e.number.name}
+         </span>`
+      : '';
+    const colorDot = e.color
+      ? `<span style="display:inline-block;width:12px;height:12px;border-radius:50%;
+               background:${e.color.hex};border:1px solid rgba(255,255,255,0.2);
+               box-shadow:0 0 6px ${e.color.hex}80;vertical-align:middle;margin-left:4px;"
+               title="${e.color.hex}"></span>`
+      : '';
+    const readingSnippet = e.reading
+      ? `<div style="font-size:11.5px;color:rgba(224,208,240,0.55);font-style:italic;
+               margin-top:5px;line-height:1.5;border-top:1px solid rgba(212,175,55,0.1);
+               padding-top:6px;">
+           ${e.reading.slice(0, 120)}${e.reading.length > 120 ? '…' : ''}
+         </div>`
+      : '';
+    return `
+    <div class="event-item ${e.status}" id="ev-${e.id}">
+      <div class="event-card-emoji">${CARD_EMOJIS[e.card.id] || '🌟'}</div>
+      <div class="event-body">
+        <div class="event-top">
+          <span class="event-user">${formatUserId(e.userId)}</span>
+          <span class="event-time">${formatTime(e.timestamp)}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
+          ${numBadge}
+          <span class="event-card-name">${e.card.name}</span>
+          ${colorDot}
+        </div>
+        <div class="event-mood">${e.card.mood}</div>
+        <div class="event-meaning">${e.card.shortMeaning}</div>
+        ${readingSnippet}
+        <div class="event-actions">
+          <button class="btn btn-highlight" onclick="highlightEvent('${e.id}')">📺 На экран</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderQuestions() {
+  const list = document.getElementById('questions-list');
+  const questions = state.questions;
+
+  document.getElementById('questions-count').textContent = questions.length;
+
+  if (!questions.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div>Вопросов пока нет...</div>';
+    return;
+  }
+
+  list.innerHTML = questions.map(q => `
+    <div class="question-item" id="qu-${q.id}">
+      <div class="question-top">
+        <span class="question-user">${formatUserId(q.userId)}</span>
+        <span class="question-time">${formatTime(q.timestamp)}</span>
+      </div>
+      <div class="question-text">"${escapeHtml(q.text)}"</div>
+      <div class="question-actions">
+        <button class="btn btn-primary" onclick="openReadingModal('${q.id}')">🃏 Вытянуть карту</button>
+        <button class="btn btn-danger"  onclick="hideQuestion('${q.id}')">🚫 Скрыть</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── ACTIONS ───────────────────────────────────────────────────────────────────
+async function launchGlobal() {
+  try {
+    const res = await fetch(`${API_BASE}/api/global/${state.channelId}`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${state.token}` }
+    });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    showLastGlobal(data.card);
+    showToast('✦ Запущена: ' + data.card.name + ' ✦');
+  } catch {
+    showToast('Ошибка запуска глобальной карты');
+  }
+}
+
+async function highlightEvent(id) {
+  try {
+    const res = await fetch(`${API_BASE}/api/events/${id}/highlight`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${state.token}` }
+    });
+    if (!res.ok) throw new Error();
+    const ev = state.events.find(e => e.id === id);
+    if (ev) ev.status = 'highlighted';
+    renderEvents();
+    showToast('✦ Событие выделено на стриме ✦');
+  } catch {
+    showToast('Ошибка выделения события');
+  }
+}
+
+async function hideQuestion(id) {
+  try {
+    const res = await fetch(`${API_BASE}/api/questions/${id}/hide`, {
+      method: 'PATCH',
+      headers: { 'Authorization': `Bearer ${state.token}` }
+    });
+    if (!res.ok) throw new Error();
+    state.questions = state.questions.filter(q => q.id !== id);
+    renderQuestions();
+    showToast('Вопрос скрыт');
+  } catch {
+    showToast('Ошибка скрытия вопроса');
+  }
+}
+
+// ── FILTERS ───────────────────────────────────────────────────────────────────
+function setFilter(section, value, btn) {
+  state.filters[section] = value;
+  btn.closest('.filter-row').querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (section === 'events') renderEvents();
+  else renderQuestions();
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function formatUserId(id) {
+  if (!id) return 'Аноним';
+  if (id.startsWith('A')) return 'Гость ' + id.slice(-4);
+  if (id.startsWith('U')) return 'Зритель ' + id.slice(-4);
+  return id.slice(0, 10);
+}
+
+function formatTime(ts) {
+  const d = new Date(ts);
+  return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function flashNew(id) {
+  setTimeout(() => {
+    const el = document.getElementById('ev-' + id);
+    if (el) el.classList.add('new');
+    setTimeout(() => el && el.classList.remove('new'), 3000);
+  }, 100);
+}
+
+function showLastGlobal(card) {
+  const el = document.getElementById('last-global');
+  el.textContent = `✦ Последняя глобальная карта: ${CARD_EMOJIS[card.id] || '🌟'} ${card.name} — ${card.shortMeaning}`;
+  el.classList.add('visible');
+}
+
+// ── QUESTION READING MODAL ────────────────────────────────────────────────────
+const ALL_NUMS = [1,2,3,4,5,6,7,8,9,11,22];
+let modalState = { questionId: null, reading: null, revealing: false };
+
+function openReadingModal(questionId) {
+  const q = state.questions.find(q => q.id === questionId);
+  if (!q) return;
+  modalState.questionId = questionId;
+  modalState.reading = null;
+  modalState.revealing = false;
+
+  // Reset all phases
+  resetModalPhases();
+
+  // Fill question context
+  document.getElementById('modal-q-text').textContent = q.text;
+
+  // Show modal
+  document.getElementById('reading-modal-backdrop').classList.add('visible');
+  document.getElementById('modal-draw-btn').disabled = false;
+  document.getElementById('modal-draw-btn').textContent = '🃏 ВЫТЯНУТЬ КАРТУ ДЛЯ ЭТОГО ВОПРОСА';
+  document.getElementById('modal-phases').style.display = 'none';
+  document.getElementById('modal-highlight-btn').classList.remove('visible');
+  document.getElementById('modal-color-bar').style.background = 'transparent';
+}
+
+function closeReadingModal(e) {
+  // Close only on backdrop click (not modal itself) or direct call
+  if (e && e.target !== document.getElementById('reading-modal-backdrop')) return;
+  document.getElementById('reading-modal-backdrop').classList.remove('visible');
+  modalState.revealing = false;
+}
+
+function resetModalPhases() {
+  ['m-phase-num','m-sep1','m-phase-card','m-sep2','m-phase-color','m-sep3','m-phase-reading']
+    .forEach(id => document.getElementById(id).classList.remove('revealed'));
+  document.getElementById('m-card-flip').classList.remove('flipped');
+  document.getElementById('m-number-slot').textContent = '?';
+  document.getElementById('m-number-slot').style.filter = '';
+  document.getElementById('m-num-name').textContent = '';
+  document.getElementById('m-num-energy').textContent = '';
+  document.getElementById('m-swatch').classList.remove('lit');
+  document.getElementById('m-reading-text').textContent = '';
+}
+
+async function drawForQuestion() {
+  if (modalState.revealing) return;
+  const btn = document.getElementById('modal-draw-btn');
+  btn.disabled = true;
+  btn.textContent = '✦ Духи читают вопрос...';
+
+  try {
+    const res = await fetch(`${API_BASE}/api/draw`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${state.token}` }
+    });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    modalState.reading = data;
+
+    document.getElementById('modal-phases').style.display = 'flex';
+    runModalReveal(data);
+
+  } catch {
+    btn.disabled = false;
+    btn.textContent = '🃏 ВЫТЯНУТЬ КАРТУ ДЛЯ ЭТОГО ВОПРОСА';
+    showToast('Ошибка — попробуй ещё раз');
+  }
+}
+
+function runModalReveal(data) {
+  modalState.revealing = true;
+
+  // Scroll modal to top so user sees phases as they appear
+  document.getElementById('reading-modal').scrollTop = 0;
+
+  // ── Phase 1: Number slot machine ─ 0.15s
+  setTimeout(() => {
+    document.getElementById('m-phase-num').classList.add('revealed');
+    rollModalNumber(data.number);
+  }, 150);
+
+  // ── Phase 2: Card flip ─ 1.8s
+  setTimeout(() => {
+    document.getElementById('m-sep1').classList.add('revealed');
+    document.getElementById('m-phase-card').classList.add('revealed');
+
+    const emoji = CARD_EMOJIS[data.card.id] || '🌟';
+    document.getElementById('m-c-emoji').textContent    = emoji;
+    document.getElementById('m-c-name').textContent     = data.card.name;
+    document.getElementById('m-ci-name').textContent    = data.card.name;
+    document.getElementById('m-ci-mood').textContent    = data.card.mood;
+    document.getElementById('m-ci-meaning').textContent = data.card.shortMeaning;
+    document.getElementById('m-ci-advice').textContent  = '✦ ' + data.card.advice;
+
+    setTimeout(() => document.getElementById('m-card-flip').classList.add('flipped'), 320);
+  }, 1800);
+
+  // ── Phase 3: Color bloom ─ 3.4s
+  setTimeout(() => {
+    document.getElementById('m-sep2').classList.add('revealed');
+    document.getElementById('m-phase-color').classList.add('revealed');
+
+    const { hex, name, keywords } = data.color;
+    const swatch = document.getElementById('m-swatch');
+    swatch.style.background = hex;
+    swatch.style.setProperty('--sw-c', hex + '55');
+
+    document.getElementById('m-color-hex').textContent  = hex;
+    document.getElementById('m-color-name').textContent = name;
+    document.getElementById('m-color-kw').textContent   = Array.isArray(keywords) ? keywords[0] : (keywords || '');
+
+    // Paint the accent bar at the top of the modal
+    document.getElementById('modal-color-bar').style.background =
+      `linear-gradient(90deg, transparent, ${hex}cc, transparent)`;
+
+    setTimeout(() => swatch.classList.add('lit'), 120);
+
+    // Scroll down a bit so color is visible
+    setTimeout(() => {
+      document.getElementById('reading-modal').scrollBy({ top: 80, behavior: 'smooth' });
+    }, 300);
+  }, 3400);
+
+  // ── Phase 4: Reading ─ 5.0s
+  setTimeout(() => {
+    document.getElementById('m-sep3').classList.add('revealed');
+    document.getElementById('m-phase-reading').classList.add('revealed');
+    document.getElementById('m-reading-text').textContent = data.reading;
+    modalState.revealing = false;
+
+    // Show highlight button
+    document.getElementById('modal-highlight-btn').classList.add('visible');
+
+    // Scroll to bottom
+    setTimeout(() => {
+      document.getElementById('reading-modal').scrollTo({ top: 9999, behavior: 'smooth' });
+    }, 400);
+  }, 5000);
+}
+
+function rollModalNumber(numberObj) {
+  const slot = document.getElementById('m-number-slot');
+  let ticks = 0;
+  const interval = setInterval(() => {
+    slot.textContent = ALL_NUMS[Math.floor(Math.random() * ALL_NUMS.length)];
+    ticks++;
+    if (ticks >= 24) {
+      clearInterval(interval);
+      slot.textContent = numberObj.value;
+      slot.style.filter = 'drop-shadow(0 0 28px rgba(212,175,55,0.95))';
+      setTimeout(() => {
+        slot.style.filter = '';
+        document.getElementById('m-num-name').textContent   = numberObj.name;
+        document.getElementById('m-num-energy').textContent = numberObj.energy;
+      }, 100);
+    }
+  }, 55);
+}
+
+// Highlight the reading result on stream (broadcast to overlay)
+async function highlightModalReading() {
+  if (!modalState.reading) return;
+  // Synthesize a fake event to broadcast
+  try {
+    const res = await fetch(`${API_BASE}/api/reading-highlight`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${state.token}`,
+      },
+      body: JSON.stringify({
+        channelId: state.channelId,
+        questionId: modalState.questionId,
+        reading: modalState.reading,
+      })
+    });
+    showToast('✦ Результат отправлен на оверлей зрителей ✦');
+  } catch {
+    showToast('Не удалось отправить на оверлей');
+  }
+}
+
+// ── START ─────────────────────────────────────────────────────────────────────
+init();
+
+// Auto-refresh every 30s
+setInterval(() => {
+  fetchEvents();
+  fetchQuestions();
+}, 30000);
+</script>
+</body>
+</html>
